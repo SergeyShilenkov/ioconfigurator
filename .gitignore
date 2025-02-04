@@ -1,0 +1,7 @@
+/venv
+/.idea
+*__pycache__
+/_data
+.DS_Store
+*.zip
+ae_*
