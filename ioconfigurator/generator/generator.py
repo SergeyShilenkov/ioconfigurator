@@ -4,20 +4,32 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from generator.generators import ai, ao, di, do
+from ioconfigurator.generator.generators import ai, ao, di, do
 
 
 __all__ = ['generate_code']
 
 
-def generate_code(path: Path, data: dict[str, list[Any]]):
-    _generators = {
-        'ai': ai.generate,
-        'ao': ao.generate,
-        'di': di.generate,
-        'do': do.generate,
-    }
+_GENERATORS = {
+    'ai': ai.generate,
+    'ao': ao.generate,
+    'di': di.generate,
+    'do': do.generate,
+}
 
+
+def _generate(path: Path, channel_type: str, data: list[Any]):
+    dir_path = Path(path, channel_type)
+    os.mkdir(dir_path)
+
+    try:
+        _GENERATORS[channel_type.lower()](dir_path, data)
+    except KeyError:
+        print(f'Нет генератора для {channel_type} сигналов')
+        sys.exit(1)
+
+
+def generate_code(path: Path, data: dict[str, list[Any]]):
     # Очищаем/создаём папку со сгенерированным кодом
     code_dir_path = Path(path.parent, '_code/')
     if code_dir_path.exists():
@@ -25,12 +37,8 @@ def generate_code(path: Path, data: dict[str, list[Any]]):
     os.mkdir(code_dir_path)
 
     # Генерируем код
-    for channel_types in data:
-        try:
-            _generators[channel_types.lower()](Path(path.parent, f'_code/{channel_types}.txt'), data[channel_types])
-        except KeyError:
-            print(f'Нет генератора для {channel_types} сигналов')
-            sys.exit(1)
+    for channel_type in data:
+        _generate(code_dir_path, channel_type, data[channel_type])
 
 
 if __name__ == '__main__':
