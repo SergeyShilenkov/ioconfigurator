@@ -105,13 +105,18 @@ def data_processing(data: list[model.ParsedLine], variables: dict[str, str]) -> 
         _limit_hi, _limit_lo, _break_hi, _break_lo = _get_limits(signal)
         _inverse = _get_inverse(signal)
 
+        _tag = signal.symbol
+        if variables:
+            if variables[signal.symbol]:
+                _tag = f"{signal.symbol}_{variables[signal.symbol]}"
+
         processed_data[signal.typeChannel].append(
             ProcessedData(
                 n_module=int(signal.nModule),
                 n_channel=int(signal.nChannel),
                 n_ref=signal.nSignalRef,
                 type=signal.typeChannel.lower(),
-                tag=f"{signal.symbol}_{variables[signal.symbol]}" if signal.symbol != '' and signal.symbol in variables else signal.symbol,
+                tag=_tag,
                 descr=signal.name,
                 inverse=_inverse,
                 min_adc=_min_adc,
