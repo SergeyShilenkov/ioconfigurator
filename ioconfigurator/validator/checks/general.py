@@ -1,7 +1,7 @@
 import re
 from typing import Callable
 
-from parsers.parser import model
+from ioconfigurator.parsers.parser import model
 
 
 __all__ = ['checks']

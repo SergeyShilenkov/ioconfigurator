@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 from typing import Callable
 
-from parsers.parser import model
-# from validator.checks import ai, ao, di, do, general
-from validator.checks import ai, general
+from ioconfigurator.parsers.parser import model
+# from ioconfigurator.validator.checks import ai, ao, di, do, general
+from ioconfigurator.validator.checks import ai, general
 
 
 __all__ = ['Validator']
@@ -18,7 +18,8 @@ ERRORS = {
 
 class Validator:
     def __init__(self, path: Path, data: list[model.ParsedLine], variables: dict[str, str] | None, exceptions: bool):
-        if not exceptions:
+        self._exceptions = exceptions
+        if not self._exceptions:
             self._logger = self._get_logger(path)
             self._logger.info('Поехали!')
 
@@ -51,7 +52,7 @@ class Validator:
 
     def validate(self):
         if self._signals is None or self._signals == []:
-            raise TypeError
+            raise TypeError("Список сигналов отсутствует или пуст")
 
         # for signal in self._signals:
         #     for check in self._checks['general']:

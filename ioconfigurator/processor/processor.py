@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from parsers.parser import model
+from ioconfigurator.parsers.parser import model
 
 
 __all__ = ['ProcessedData', 'data_processing']

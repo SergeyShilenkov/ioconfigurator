@@ -1,30 +1,45 @@
 from pathlib import Path
 
-from processor.processor import ProcessedData
+from ioconfigurator.processor.processor import ProcessedData
 
 
-def _header(title: str) -> str:
-    return f'{100*"="}\n{100*"="}\n{title}\n{100*"="}\n{100*"="}\n\n'
-
-
-def _generate_structs(data: list[ProcessedData]) -> str:
-    _strAoClass = ['TYPE strAoClass :\nSTRUCT']
-    _strAo_ = ['TYPE strAo_ :\nSTRUCT']
-    _strAo_cmd = ['TYPE strAo_cmd :\nSTRUCT']
+def _generate_str_ao_class(path: Path, data: list[ProcessedData]) -> None:
+    _text = ['TYPE strAoClass :\nSTRUCT']
 
     for s in data:
-        _strAoClass.append(f'\t{s.tag} : signals.fbAo; // {s.descr}')
-        _strAo_.append(f'\t{s.tag} : REAL; // {s.descr}')
-        _strAo_cmd.append(f'\t{s.tag} : signals.strAoCmd; // {s.descr}')
+        _text.append(f'\t{s.tag} : signals.fbAo; // {s.descr}')
 
-    _strAoClass.append('END_STRUCT\nEND_TYPE\n\n\n')
-    _strAo_.append('END_STRUCT\nEND_TYPE\n\n\n')
-    _strAo_cmd.append('END_STRUCT\nEND_TYPE')
+    _text.append('END_STRUCT\nEND_TYPE')
 
-    return '\n'.join(_strAoClass + _strAo_ + _strAo_cmd)
+    with open(Path(path, 'strAoClass.txt'), 'w') as f:
+        f.write('\n'.join(_text))
 
 
-def _generate_meth_init(data: list[ProcessedData]) -> str:
+def _generate_str_ao_(path: Path, data: list[ProcessedData]) -> None:
+    _text = ['TYPE strAo_ :\nSTRUCT']
+
+    for s in data:
+        _text.append(f'\t{s.tag} : REAL; // {s.descr}')
+
+    _text.append('END_STRUCT\nEND_TYPE')
+
+    with open(Path(path, 'strAo_.txt'), 'w') as f:
+        f.write('\n'.join(_text))
+
+
+def _generate_str_ao_cmd(path: Path, data: list[ProcessedData]) -> None:
+    _text = ['TYPE strAo_cmd :\nSTRUCT']
+
+    for s in data:
+        _text.append(f'\t{s.tag} : signals.strAoCmd; // {s.descr}')
+
+    _text.append('END_STRUCT\nEND_TYPE')
+
+    with open(Path(path, 'strAoCmd.txt'), 'w') as f:
+        f.write('\n'.join(_text))
+
+
+def _generate_meth_init(path: Path, data: list[ProcessedData]) -> None:
     _text = []
 
     for s in data:
@@ -37,20 +52,22 @@ def _generate_meth_init(data: list[ProcessedData]) -> str:
 
         _text.append(f'gvl.aoClass.{s.tag}.methInit(settings := _settings);\n\n')
 
-    return '\n'.join(_text)
+    with open(Path(path, 'methInit.txt'), 'w') as f:
+        f.write('\n'.join(_text))
 
 
-def _generate_meth_proc(data: list[ProcessedData]) -> str:
+def _generate_meth_proc(path: Path, data: list[ProcessedData]) -> None:
     _text = []
 
     for s in data:
         _text.append(f'// {s.descr}')
         _text.append(f'gvl.aoClass.{s.tag}.methProc(raw := gvl.ao.{s.tag}, cmd := gvl.aoCmd.{s.tag});')
 
-    return '\n'.join(_text)
+    with open(Path(path, 'methProc.txt'), 'w') as f:
+        f.write('\n'.join(_text))
 
 
-def _generate_meth_reference(data: list[ProcessedData]) -> str:
+def _generate_meth_reference(path: Path, data: list[ProcessedData]) -> None:
     _text = []
 
     for s in data:
@@ -58,40 +75,37 @@ def _generate_meth_reference(data: list[ProcessedData]) -> str:
         _text.append(f'gvl.aoClass.{s.tag}.propSetId := {s.n_ref};')
         _text.append(f'gvl.aoReference[{s.n_ref}].block REF= gvl.aoClass.{s.tag};\n')
 
-    return '\n'.join(_text)
+    with open(Path(path, 'methReference.txt'), 'w') as f:
+        f.write('\n'.join(_text))
 
 
-def _generate_meth_upload(data: list[ProcessedData]) -> str:
+def _generate_meth_upload(path: Path, data: list[ProcessedData]) -> None:
     _text = []
 
     for idx, s in enumerate(data):
         _cell = 'cell_start' if idx == 0 else 'methUpload'
 
-        _text.append(f'methUpload := gvl.aoClass.{s.tag}.methUpload(mas := gvl.global_mass, cell := {_cell}, swap_bytes := FALSE); // {s.descr}')
+        _text.append(f'methUpload := gvl.aoClass.{s.tag}.methUpload(mas := gvl.global_mass, cell := {_cell}, '
+                     f'swap_bytes := FALSE); // {s.descr}')
 
-    return '\n'.join(_text)
+    with open(Path(path, 'methUpload.txt'), 'w') as f:
+        f.write('\n'.join(_text))
 
 
 def generate(path: Path, data: list[ProcessedData]) -> None:
-    with open(path, 'w') as f:
-        f.write(_header('СТРУКТУРЫ'))
-        f.write(_generate_structs(data))
-        f.write('\n\n')
+    _generate_str_ao_class(path, data)
 
-        f.write(_header('methInit'))
-        f.write(_generate_meth_init(data))
-        f.write('\n\n')
+    _generate_str_ao_(path, data)
 
-        f.write(_header('methProc'))
-        f.write(_generate_meth_proc(data))
-        f.write('\n\n')
+    _generate_str_ao_cmd(path, data)
 
-        f.write(_header('methReference'))
-        f.write(_generate_meth_reference(data))
-        f.write('\n\n')
+    _generate_meth_init(path, data)
 
-        f.write(_header('methUpload'))
-        f.write(_generate_meth_upload(data))
+    _generate_meth_proc(path, data)
+
+    _generate_meth_reference(path, data)
+
+    _generate_meth_upload(path, data)
 
 
 if __name__ == '__main__':
