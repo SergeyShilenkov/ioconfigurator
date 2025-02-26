@@ -7,11 +7,11 @@ import sys
 from pathlib import Path
 from typing import Type
 
-from generator.generator import generate_code
-from parsers.parser import ParserIO, ParserVars, model
-from processor.processor import data_processing
-from validator.validator import Validator
-from parsers import errors
+from ioconfigurator.generator.generator import generate_code
+from ioconfigurator.parsers.parser import ParserIO, ParserVars, model
+from ioconfigurator.processor.processor import data_processing
+from ioconfigurator.validator.validator import Validator
+from ioconfigurator.parsers import errors
 
 
 def _parse_args() -> argparse.Namespace:

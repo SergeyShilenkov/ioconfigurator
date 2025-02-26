@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from parsers.parser import model
+from ioconfigurator.parsers.parser import model
 
 
 __all__ = ['ProcessedData', 'data_processing']
@@ -98,7 +98,7 @@ def data_processing(data: list[model.ParsedLine], variables: dict[str, str]) -> 
         if signal.typeChannel not in processed_data:
             processed_data[signal.typeChannel] = []
 
-        _reserve = True if 'резерв' in signal.name.lower() else False
+        _reserve = 'резерв' in signal.name.lower()
 
         _min_adc, _max_adc = _get_minmax_adc(signal, _reserve)
         _min, _max = _get_minmax(signal, _reserve)

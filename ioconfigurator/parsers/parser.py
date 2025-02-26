@@ -25,8 +25,8 @@ from openpyxl.utils.exceptions import InvalidFileException
 from pathlib import Path
 from typing import Any
 
-import parsers.errors as errors
-import parsers.model as model
+import ioconfigurator.parsers.errors as errors
+import ioconfigurator.parsers.model as model
 
 __all__ = ['ParserIO', 'ParserVars']
 
